@@ -647,10 +647,10 @@ endif(DOXYGEN_FOUND)
 #                                Manual setup                                  #
 ################################################################################
 
-set(MANUAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/manual")
-if(EXISTS "${MANUAL_DIR}"
-   AND EXISTS "${MANUAL_DIR}/variables.tex.in"
-   AND EXISTS "${MANUAL_DIR}/conf.py.in")
+find_package(LATEX)
+
+if (LATEX_FOUND)
+  include(cmake/UseLATEX.cmake)
   # retrieve current branch name for CAF
   execute_process(COMMAND git rev-parse --abbrev-ref HEAD
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -661,11 +661,9 @@ if(EXISTS "${MANUAL_DIR}"
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   OUTPUT_VARIABLE CAF_SHA
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  # retrieve current SHA1 hash for the Manual
-  execute_process(COMMAND git log --pretty=format:%h -n 1
-                  WORKING_DIRECTORY ${MANUAL_DIR}
-                  OUTPUT_VARIABLE CAF_MANUAL_SHA
-                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # generate semantic CAF version for manual
+  set(CAF_RELEASE "${CAF_VERSION}+exp.sha.${CAF_SHA}")
+  # check whether we're building the manual for a stable release
   if(${GIT_BRANCH} STREQUAL "master")
     # retrieve current tag name for CAF
     execute_process(COMMAND git describe --tags --contains ${CAF_SHA}
@@ -674,28 +672,21 @@ if(EXISTS "${MANUAL_DIR}"
                     OUTPUT_VARIABLE GIT_TAG
                     ERROR_QUIET
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
-    # prefer tag name over auto-generated version
+    # tags indicate stable releases -> omit "+exp.sha..." suffix
     if(GIT_TAG_RES STREQUAL "0")
       set(CAF_RELEASE "${GIT_TAG}")
-    else()
-      set(CAF_RELEASE "${CAF_VERSION}")
     endif()
-  else()
-    set(CAF_RELEASE "${CAF_VERSION}+exp.sha.${CAF_SHA}")
   endif()
   MESSAGE(STATUS "Set manual version to ${CAF_RELEASE}")
-  configure_file("${MANUAL_DIR}/variables.tex.in"
-                 "${MANUAL_DIR}/variables.tex"
-                 IMMEDIATE @ONLY)
-  configure_file("${MANUAL_DIR}/conf.py.in"
-                 "${MANUAL_DIR}/conf.py"
-                 IMMEDIATE @ONLY)
-  configure_file("${MANUAL_DIR}/index_header.rst.in"
-                 "${MANUAL_DIR}/index_header.rst"
-                 IMMEDIATE @ONLY)
-  configure_file("${MANUAL_DIR}/index_footer.rst.in"
-                 "${MANUAL_DIR}/index_footer.rst"
-                 IMMEDIATE @ONLY)
+  # copy examples into place (destination is relative to current binary dir)
+  file(COPY examples/ DESTINATION examples)
+  # copy selected headers into place
+  file(COPY libcaf_core/caf/exit_reason.hpp
+       DESTINATION libcaf_core/caf/)
+  file(COPY libcaf_core/caf/sec.hpp
+       DESTINATION libcaf_core/caf/)
+  # call subdirectory
+  add_subdirectory(doc/tex)
 endif()
 
 ################################################################################
