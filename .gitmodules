@@ -1,9 +1,9 @@
 [submodule "benchmarks"]
 	path = benchmarks
-	url = ../benchmarks.git
+	url = https://github.com/actor-framework/benchmarks.git
 [submodule "opencl"]
 	path = libcaf_opencl
-	url = ../opencl.git
+	url = https://github.com/actor-framework/opencl.git
 [submodule "libcaf_python"]
 	path = libcaf_python
-	url = ../python.git
+	url = https://github.com/actor-framework/python.git

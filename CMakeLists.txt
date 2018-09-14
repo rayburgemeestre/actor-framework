@@ -199,6 +199,7 @@ if(NOT CAF_NO_AUTO_LIBCPP AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
           "${CMAKE_CURRENT_BINARY_DIR}"
           "${CMAKE_CURRENT_SOURCE_DIR}/cmake/get_compiler_version.cpp"
           RUN_OUTPUT_VARIABLE CompilerVersion)
+  set(CompilationSucceeded TRUE) # there is a bug in above stuff..
   if(NOT CompilationSucceeded OR NOT ProgramResult EQUAL 0)
     message(STATUS "Use clang with GCC' libstdc++")
   else()
